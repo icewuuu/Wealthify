@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import logo from "../assets/logo.png";
 
 export function LoginForm({
   className,
@@ -13,15 +14,11 @@ export function LoginForm({
       <form>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-md">
-                <GalleryVerticalEnd className="size-6" />
-              </div>
-              <span className="sr-only">Wealthify</span>
-            </a>
+            <div className="flex h-32 w-32 items-center justify-center rounded-md">
+              <img src={logo} alt="Wealthify" className="h-32 w-32" />
+            </div>
+            <span className="sr-only">Wealthify</span>
+
             <h1 className="text-xl font-bold">Welcome to Wealthify</h1>
             <div className="text-center text-sm">
               Don&apos;t have an account?{" "}
