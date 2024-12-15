@@ -25,7 +25,6 @@ export function ModeToggle() {
       ) : (
         <Moon className="h-[1.2rem] w-[1.2rem] transition-all" />
       )}
-      <span className="sr-only">Toggle theme</span>
     </Button>
   );
 }
