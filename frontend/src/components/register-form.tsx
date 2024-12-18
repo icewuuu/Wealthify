@@ -1,21 +1,79 @@
-import { GalleryVerticalEnd } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import logo from "../assets/logo.png";
+import darkLogoB from "../assets/white_blue.png";
+import { useNavigate } from "react-router-dom";
+import lightLogoB from "../assets/black_blue.png";
+import { useTheme } from "./theme-provider";
+import { useRef, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import api from "@/api";
 
 export function RegisterForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const { theme } = useTheme();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (password !== confirmPassword) {
+      console.error("Passwords do not match");
+      passwordRef.current?.focus();
+      toast({
+        variant: "destructive",
+        title: "Password mismatch",
+        description: "The passwords you entered do not match.",
+      });
+
+      return;
+    }
+
+    try {
+      const response = await api.post("/api/user/register/", {
+        username,
+        email,
+        password,
+      });
+      // Handle successful registration
+      console.log("Registration successful:", response.data);
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration failed:", error);
+      // Handle registration error
+      toast({
+        variant: "destructive",
+        title: "Registration failed",
+        description:
+          (error as any).response?.data?.email ||
+          (error as any).response?.data?.username ||
+          "An unknown error occurred",
+      });
+    }
+  };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
             <div className="flex h-32 w-32 items-center justify-center rounded-md">
-              <img src={logo} alt="Wealthify" className="h-32 w-32" />
+              <a href="/">
+                <img
+                  src={theme === "light" ? lightLogoB : darkLogoB}
+                  alt="Wealthify"
+                  className="h-32 w-32"
+                />
+              </a>
             </div>
 
             <h1 className="text-xl font-bold">Welcome to Wealthify</h1>
@@ -44,11 +102,24 @@ export function RegisterForm({
           </div>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="m@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -57,7 +128,21 @@ export function RegisterForm({
               <Input
                 id="password"
                 type="password"
-                placeholder="********"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                ref={passwordRef}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>

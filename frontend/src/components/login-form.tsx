@@ -1,21 +1,78 @@
-import { GalleryVerticalEnd } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import logo from "../assets/logo.png";
+import darkLogoB from "../assets/white_blue.png";
+import lightLogoB from "../assets/black_blue.png";
+import { useTheme } from "./theme-provider";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import api from "@/api";
+import Cookies from "js-cookie";
+import { useAuth } from "@/context/AuthContext";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const { theme } = useTheme();
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const { login } = useAuth();
+  const { toast } = useToast();
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    console.log("Logging in with:", { username, password });
+    try {
+      const response = await api.post("/api/token/", {
+        username,
+        password,
+      });
+      // Handle successful login
+      var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
+
+      Cookies.set("accessToken", response.data.access, {
+        expires: inFifteenMinutes,
+        secure: true,
+        sameSite: "strict",
+      });
+      Cookies.set("refreshToken", response.data.refresh, {
+        expires: 1,
+        secure: true,
+        sameSite: "strict",
+      });
+
+      login(response.data.access);
+      navigate("/");
+    } catch (error) {
+      console.error("Login failed:", error);
+      // Handle login error
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description:
+          (error as any).response?.data?.non_field_errors ||
+          "An unknown error occurred",
+      });
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
             <div className="flex h-32 w-32 items-center justify-center rounded-md">
-              <img src={logo} alt="Wealthify" className="h-32 w-32" />
+              <a href="/">
+                <img
+                  src={theme === "light" ? lightLogoB : darkLogoB}
+                  alt="Wealthify"
+                  className="h-32 w-32"
+                />
+              </a>
             </div>
             <span className="sr-only">Wealthify</span>
 
@@ -29,11 +86,24 @@ export function LoginForm({
           </div>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="text">Email/Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
+                id="username"
+                type="text"
+                placeholder="m@example.com or username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>

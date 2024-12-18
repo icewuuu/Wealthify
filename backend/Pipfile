@@ -9,6 +9,13 @@ django = "*"
 psycopg-binary = "*"
 postgres = "*"
 psycopg = "*"
+django-cors-headers = "*"
+djangorestframework = "*"
+djangorestframework-simplejwt = "*"
+pyjwt = "*"
+pytz = "*"
+sqlparse = "*"
+pillow = "*"
 
 [dev-packages]
 
