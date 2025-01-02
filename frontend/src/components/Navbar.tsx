@@ -32,8 +32,8 @@ const routeList: RouteProps[] = [
     label: "Features",
   },
   {
-    href: "#testimonials",
-    label: "Testimonials",
+    href: "#reviews",
+    label: "Reviews",
   },
   {
     href: "#pricing",
@@ -49,8 +49,6 @@ export const Navbar = () => {
   const { theme } = useTheme();
   const { isAuthenticated, user } = useAuth();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  console.log("isAuthenticated", isAuthenticated);
-  console.log("user", user);
 
   return (
     <header className="sticky border-b-[1px] top-0 z-40 w-full bg-white dark:border-b-slate-700 dark:bg-background">
@@ -107,6 +105,17 @@ export const Navbar = () => {
                   {isAuthenticated && user ? (
                     <a
                       rel="noreferrer noopener"
+                      href="/dashboard"
+                      className="flex items-center"
+                    >
+                      My Dashboards
+                    </a>
+                  ) : (
+                    ""
+                  )}
+                  {isAuthenticated && user ? (
+                    <a
+                      rel="noreferrer noopener"
                       href="/profile"
                       className="flex items-center"
                     >
@@ -142,6 +151,17 @@ export const Navbar = () => {
                 {route.label}
               </a>
             ))}
+            {isAuthenticated && user ? (
+              <a
+                rel="noreferrer noopener"
+                href="/dashboard"
+                className="flex items-center"
+              >
+                My Dashboards
+              </a>
+            ) : (
+              ""
+            )}
           </nav>
 
           <div className="hidden md:flex gap-2">
