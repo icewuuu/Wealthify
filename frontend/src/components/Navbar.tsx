@@ -155,7 +155,9 @@ export const Navbar = () => {
               <a
                 rel="noreferrer noopener"
                 href="/dashboard"
-                className="flex items-center"
+                className={`text-[17px] flex items-center ${buttonVariants({
+                  variant: "ghost",
+                })}`}
               >
                 My Dashboards
               </a>
