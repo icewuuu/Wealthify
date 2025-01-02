@@ -32,7 +32,13 @@ api.interceptors.response.use(
           `${import.meta.env.VITE_API_URL}/api/token/refresh/`,
           { refresh: refreshToken }
         );
-        Cookies.set("accessToken", data.access);
+        var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
+
+        Cookies.set("accessToken", data.access, {
+          expires: inFifteenMinutes,
+          secure: true,
+          sameSite: "strict",
+        });
         originalRequest.headers.Authorization = `Bearer ${data.access}`;
         return api(originalRequest);
       } catch (refreshError) {

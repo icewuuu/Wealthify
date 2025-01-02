@@ -24,19 +24,61 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const token = Cookies.get("accessToken");
-    if (token) {
-      const decoded: any = jwtDecode(token);
-      const now = Date.now() / 1000;
-      if (decoded.exp > now) {
-        setIsAuthenticated(true);
-        fetchUserData(token);
+    const auth = async () => {
+      const token = Cookies.get("accessToken");
+      console.log(token);
+      if (token) {
+        const decoded: any = jwtDecode(token);
+        const now = Date.now() / 1000;
+        if (decoded.exp > now) {
+          setIsAuthenticated(true);
+          fetchUserData(token);
+        } else {
+          Cookies.remove("accessToken");
+          Cookies.remove("refreshToken");
+        }
       } else {
-        Cookies.remove("accessToken");
-        Cookies.remove("refreshToken");
+        const refreshToken = Cookies.get("refreshToken");
+        console.log(refreshToken);
+        if (refreshToken) {
+          refreshAccessToken();
+        }
       }
-    }
+    };
+
+    auth();
   }, []);
+
+  const refreshAccessToken = async () => {
+    try {
+      const refreshToken = Cookies.get("refreshToken");
+      if (!refreshToken) {
+        setIsAuthenticated(false);
+        return;
+      }
+
+      const res = await api.post("/api/token/refresh/", {
+        refresh: refreshToken,
+      });
+      if (res.status === 200) {
+        var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
+
+        Cookies.set("accessToken", res.data.access, {
+          expires: inFifteenMinutes,
+          secure: true,
+          sameSite: "strict",
+        });
+
+        setIsAuthenticated(true);
+        fetchUserData(res.data.access);
+      } else {
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setIsAuthenticated(false);
+    }
+  };
 
   const fetchUserData = async (token: string) => {
     try {
@@ -54,7 +96,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (token: string) => {
     const decoded: any = jwtDecode(token);
     setIsAuthenticated(true);
-    Cookies.set("accessToken", token);
+    var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
+
+    Cookies.set("accessToken", token, {
+      expires: inFifteenMinutes,
+      secure: true,
+      sameSite: "strict",
+    });
     fetchUserData(token);
   };
 
@@ -74,6 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+  console.log(context);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }

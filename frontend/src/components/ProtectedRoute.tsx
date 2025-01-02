@@ -19,7 +19,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         refresh: refreshToken,
       });
       if (res.status === 200) {
-        Cookies.set("accessToken", res.data.access);
+        var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
+
+      Cookies.set("accessToken", res.data.access, {
+        expires: inFifteenMinutes,
+        secure: true,
+        sameSite: "strict",
+      });
         setIsAuthorized(true);
       } else {
         setIsAuthorized(false);
