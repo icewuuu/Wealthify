@@ -16,6 +16,7 @@ pyjwt = "*"
 pytz = "*"
 sqlparse = "*"
 pillow = "*"
+psycopg2 = "*"
 
 [dev-packages]
 
