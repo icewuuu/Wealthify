@@ -23,40 +23,44 @@ export function LoginForm({
   const { login } = useAuth();
   const { toast } = useToast();
 
+  const accessTokenExpiration = new Date(new Date().getTime() + 15 * 60 * 1000); // This can be constant for setting both tokens.
+
+  // Function to handle login error
+  const handleLoginError = (error: any) => {
+    const errorMessage =
+      error?.response?.data?.non_field_errors || "An unknown error occurred";
+    toast({
+      variant: "destructive",
+      title: "Login failed",
+      description: errorMessage,
+    });
+  };
+
+  // Function to handle successful login
+  const handleSuccessfulLogin = (accessToken: string, refreshToken: string) => {
+    Cookies.set("accessToken", accessToken, {
+      expires: accessTokenExpiration,
+      secure: true,
+      sameSite: "strict",
+    });
+    Cookies.set("refreshToken", refreshToken, {
+      expires: 1, // Consider revisiting the expiry for refresh token.
+      secure: true,
+      sameSite: "strict",
+    });
+
+    login(accessToken);
+    navigate("/dashboard");
+  };
+
+  // Handle form submission
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Logging in with:", { username, password });
     try {
-      const response = await api.post("/api/token/", {
-        username,
-        password,
-      });
-      // Handle successful login
-      var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
-
-      Cookies.set("accessToken", response.data.access, {
-        expires: inFifteenMinutes,
-        secure: true,
-        sameSite: "strict",
-      });
-      Cookies.set("refreshToken", response.data.refresh, {
-        expires: 1,
-        secure: true,
-        sameSite: "strict",
-      });
-
-      login(response.data.access);
-      navigate("/");
+      const { data } = await api.post("/api/token/", { username, password });
+      handleSuccessfulLogin(data.access, data.refresh);
     } catch (error) {
-      console.error("Login failed:", error);
-      // Handle login error
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description:
-          (error as any).response?.data?.non_field_errors ||
-          "An unknown error occurred",
-      });
+      handleLoginError(error);
     }
   };
 
@@ -84,9 +88,10 @@ export function LoginForm({
               </a>
             </div>
           </div>
+
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
-              <Label htmlFor="text">Email/Username</Label>
+              <Label htmlFor="username">Email/Username</Label>
               <Input
                 id="username"
                 type="text"
@@ -111,11 +116,13 @@ export function LoginForm({
               Login
             </Button>
           </div>
+
           <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
             <span className="relative z-10 bg-background px-2 text-muted-foreground">
               Or
             </span>
           </div>
+
           <div className="grid gap-4 sm:grid-cols-1">
             <Button variant="outline" className="w-full">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -129,7 +136,8 @@ export function LoginForm({
           </div>
         </div>
       </form>
-      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary  ">
+
+      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
         By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
         and <a href="#">Privacy Policy</a>.
       </div>
