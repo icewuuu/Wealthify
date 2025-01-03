@@ -3,36 +3,52 @@ import { Navigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
+// Define a PublicRoute component to handle public route protection based on authentication state
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       const token = Cookies.get("accessToken");
-      console.log("Token:", token);
+
+      // If no token, the user is unauthorized
       if (!token) {
         setIsAuthorized(false);
         return;
       }
-      const decoded: any = jwtDecode(token);
-      const tokenExpiration = decoded.exp;
-      const now = Date.now() / 1000;
 
-      if (tokenExpiration < now) {
+      try {
+        const decoded: any = jwtDecode(token); // Decode the JWT token
+        const tokenExpiration = decoded.exp; // Get the expiration time from the token
+        const now = Date.now() / 1000; // Current time in seconds
+
+        // If token is expired, user is unauthorized
+        if (tokenExpiration < now) {
+          setIsAuthorized(false);
+        } else {
+          setIsAuthorized(true); // Token is valid, user is authorized
+        }
+      } catch (error) {
+        // In case of error decoding the token, consider the user unauthorized
         setIsAuthorized(false);
-      } else {
-        setIsAuthorized(true);
       }
     };
 
-    checkAuth();
+    checkAuth(); // Run the authentication check when the component mounts
   }, []);
 
   if (isAuthorized === null) {
+    // Show a loading state while checking authentication
     return <div>Loading...</div>;
   }
-  console.log("isAuthorized:", isAuthorized);
-  return isAuthorized ? <Navigate to="/" /> : children;
+
+  // Redirect authenticated users to the homepage (or any other protected route)
+  if (isAuthorized) {
+    return <Navigate to="/dashboard" />;
+  }
+
+  // If not authenticated, render the public content (children)
+  return <>{children}</>;
 };
 
 export default PublicRoute;

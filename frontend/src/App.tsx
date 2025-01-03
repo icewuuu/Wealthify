@@ -18,15 +18,9 @@ function App() {
         <SidebarProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Home />
-                  </ProtectedRoute>
-                }
-              />
+              {/* Public Routes (accessible by unauthenticated users) */}
+              <Route path="/" element={<LandingPage />} />{" "}
+              {/* No need for PublicRoute here if it's public */}
               <Route
                 path="/login"
                 element={
@@ -41,6 +35,15 @@ function App() {
                   <PublicRoute>
                     <Register />
                   </PublicRoute>
+                }
+              />
+              {/* Protected Routes (accessible only by authenticated users) */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
                 }
               />
             </Routes>
